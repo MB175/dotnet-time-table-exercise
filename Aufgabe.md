@@ -15,12 +15,6 @@ Ziel: Du erweiterst eine funktionierende .NET-Minimal-API mit dem `PlanManager`,
 
 ## 🚀 Schritt 0 – Projekt starten mit Auto-Reload
 
-Lade die nootwendigen Bibliotheken
-
-```bash
-dotnet add package Swashbuckle.AspNetCore
-```
-
 Nutze folgenden Befehl, damit dein Projekt automatisch bei Codeänderungen neu startet:
 
 ```bash
