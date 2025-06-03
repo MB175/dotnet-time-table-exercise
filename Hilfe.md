@@ -85,6 +85,56 @@ DELETE http://localhost:5224/plan/tag?kw=24&index=0
 
 ---
 
+## 📥 Erklärung: `ReadFromJsonAsync<T>()`
+
+```csharp
+var body = await request.ReadFromJsonAsync<StundeMitKW>();
+```
+
+### 🔍 Was passiert hier?
+
+Diese Zeile liest den HTTP-Request-Body und wandelt ihn automatisch in ein C#-Objekt um. In diesem Fall: `StundeMitKW`.
+
+---
+
+### 🧠 Beispiel
+
+Wenn der Client folgendes JSON sendet:
+
+```json
+{
+  "kw": 24,
+  "fach": "Physik",
+  "tag": "Montag",
+  "zeit": "09:00"
+}
+```
+
+Dann wird daraus automatisch folgendes C#-Objekt erzeugt:
+
+```csharp
+new StundeMitKW(24, "Physik", "Montag", "09:00");
+```
+
+---
+
+### ✅ Voraussetzung
+
+- Der HTTP-Header muss `Content-Type: application/json` enthalten
+- Das JSON muss zum Aufbau des Record-Typs passen
+
+---
+
+### 📘 Hintergrund
+
+- Methode: `HttpRequest.ReadFromJsonAsync<T>()`
+- Kommt aus dem Namespace: `System.Net.Http.Json`
+- Gibt ein `Task<T>` zurück → deshalb muss `await` verwendet werden
+- Spart Zeit, weil kein manuelles Parsen notwendig ist
+
+---
+---
+
 ## 💡 Weitere Tipps
 
 - Endpunkte sollten immer sinnvoll prüfen, ob Parameter fehlen
