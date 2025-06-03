@@ -4,22 +4,25 @@ Der `PlanManager` ist eine Hilfsklasse zur Verwaltung von Stundenplänen nach Ka
 
 Ideal für APIs, Sync-Tools oder einfache Verwaltungs-Backends.
 
+
+## ✅ Funktionen
+
+| Funktion                    | Beschreibung                                           |
+|-----------------------------|--------------------------------------------------------|
+| `AddStunde`                | Fügt eine neue Stunde in eine Kalenderwoche ein       |
+| `GetPlan`                  | Gibt alle Stunden einer KW mit Index zurück            |
+| `GetDayPlan`              | Filtert Stunden einer KW nach Wochentag               |
+| `UpdateStunde`            | Überschreibt eine Stunde an gegebenem Index           |
+| `DeleteStunde`            | Entfernt eine Stunde aus einer Woche                  |
+| `MergePlan`               | Fügt externe Stunden in eine bestehende KW ein         |
+| `GetRaw`                  | Gibt das vollständige Dictionary zurück               |
+| `GetAllStunden`           | Gibt alle Stunden einer Woche (ohne Index) zurück     |
+
 ---
 
-## 🧱 Datenstruktur
+## 🧱 Datenmodelle
 
-```csharp
-Dictionary<int, Dictionary<int, Stunde>>
-```
-
-- `int` (KW) → Kalenderwoche  
-- `int` (Index) → eindeutiger Index pro Stunde in dieser KW  
-- `Stunde` → Objekt mit Fach, Tag, Zeit
-
----
-
-## 📦 Model: `Stunde`
-
+### 📦 `Stunde`
 ```csharp
 public record Stunde
 {
@@ -29,152 +32,50 @@ public record Stunde
 }
 ```
 
----
-
-## 🏗 Konstruktor
-
+### 📦 `StundeMitKW`
+Für POST-Anfragen – enthält KW separat:
 ```csharp
-new PlanManager(Dictionary<int, Dictionary<int, Stunde>>? initial = null)
+public record StundeMitKW(int KW, string Fach, string Tag, string Zeit);
 ```
 
-> Erstellt einen leeren Manager oder lädt direkt Pläne vor.
-
+### 📦 `StundeMitIndex`
+Wird für API-Ausgabe verwendet:
 ```csharp
-var manager = new PlanManager(); // leer
-
-var preload = new Dictionary<int, Dictionary<int, Stunde>> { ... };
-var manager2 = new PlanManager(preload); // mit initialem Plan
+public record StundeMitIndex(int Index, Stunde Stunde);
 ```
 
----
-
-## 📥 AddStunde
-
+### 📦 `StundeAenderungMitIndex`
+Für PUT-Anfragen – ändert einen Eintrag gezielt:
 ```csharp
-int AddStunde(int kw, Stunde stunde)
-```
-
-> Fügt eine neue Stunde in die Kalenderwoche ein. Gibt den neuen Index zurück.
-
-```csharp
-int index = manager.AddStunde(23, new Stunde { Fach = "Bio", Tag = "Dienstag", Zeit = "10:00" });
+public record StundeAenderungMitIndex(int KW, int Index, Stunde Stunde);
 ```
 
 ---
 
-## 📤 GetPlan
-
-```csharp
-IEnumerable<(int Index, Stunde Stunde)> GetPlan(int kw)
-```
-
-> Gibt alle Stunden einer KW mit Index zurück.
-
-```csharp
-var alle = manager.GetPlan(23);
-```
-
----
-
-## 📅 GetDayPlan
-
-```csharp
-IEnumerable<(int Index, Stunde Stunde)> GetDayPlan(int kw, string tag)
-```
-
-> Gibt nur Stunden eines bestimmten Tages (z. B. `"Dienstag"`) zurück.
-
-```csharp
-var dienstag = manager.GetDayPlan(23, "Dienstag");
-```
-
----
-
-## ❌ DeleteStunde
-
-```csharp
-bool DeleteStunde(int kw, int index)
-```
-
-> Löscht eine Stunde über Index und KW. Gibt `true` zurück bei Erfolg.
-
-```csharp
-manager.DeleteStunde(23, 1);
-```
-
----
-
-## 🔁 UpdateStunde
-
-```csharp
-bool UpdateStunde(int kw, int index, Stunde neueStunde)
-```
-
-> Aktualisiert eine existierende Stunde.
-
-```csharp
-manager.UpdateStunde(23, 1, new Stunde { Fach = "Geo", Tag = "Dienstag", Zeit = "11:00" });
-```
-
----
-
-## 🧾 GetAllStunden
-
-```csharp
-List<Stunde> GetAllStunden(int kw)
-```
-
-> Gibt nur die Stunde-Objekte (ohne Index) zurück.
-
-```csharp
-var nurStunden = manager.GetAllStunden(23);
-```
-
----
-
-## 🧱 GetRaw
-
-```csharp
-Dictionary<int, Dictionary<int, Stunde>> GetRaw()
-```
-
-> Gibt die komplette interne Datenstruktur zurück.
-
-```csharp
-var alleDaten = manager.GetRaw();
-```
-
----
-
-## 🔗 MergePlan
-
-```csharp
-void MergePlan(int kw, IEnumerable<Stunde> neueStunden)
-```
-
-> Fügt mehrere Stunden in eine KW ein, mit automatisch fortlaufenden Indizes.
-
-```csharp
-manager.MergePlan(23, new[] {
-    new Stunde { Fach = "Spanisch", Tag = "Freitag", Zeit = "13:00" }
-});
-```
-
----
-
-## 📋 Beispielnutzung
+## 🧠 Beispielverwendung
 
 ```csharp
 var manager = new PlanManager();
 
-int index = manager.AddStunde(24, new Stunde { Fach = "Bio", Tag = "Freitag", Zeit = "12:00" });
+var index = manager.AddStunde(23, new Stunde
+{
+    Fach = "Mathe",
+    Tag = "Montag",
+    Zeit = "08:00"
+});
 
-var alle = manager.GetPlan(24);
+var plan = manager.GetPlan(23); // alle Stunden mit Index
 
-manager.UpdateStunde(24, index, new Stunde { Fach = "Biologie", Tag = "Freitag", Zeit = "12:00" });
+var dienstag = manager.GetDayPlan(23, "Dienstag");
 
-manager.DeleteStunde(24, index);
+manager.UpdateStunde(23, index, new Stunde
+{
+    Fach = "Informatik",
+    Tag = "Montag",
+    Zeit = "09:00"
+});
+
+manager.DeleteStunde(23, index);
 ```
 
 ---
-
