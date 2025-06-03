@@ -1,0 +1,3 @@
+### 📋 Alle Stundenpläne abrufen
+GET http://localhost:5224/plan/all
+Accept: application/json
